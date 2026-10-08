@@ -167,6 +167,38 @@ int KYTY_SYSV_ABI Audio3dPortOpen(int user_id, const Audio3dOpenParameters* para
 	return OK;
 }
 
+int KYTY_SYSV_ABI Audio3dPortClose(uint32_t port_id) {
+	PRINT_NAME();
+
+	EXIT_NOT_IMPLEMENTED(port_id >= MAX_PORTS);
+	EXIT_NOT_IMPLEMENTED(!g_ports[port_id].used);
+
+	auto* port = &g_ports[port_id];
+
+	if (port->playback_sema != nullptr) {
+		Semaphore::KernelDeleteSema(port->playback_sema);
+		port->playback_sema = nullptr;
+	}
+
+	while (!port->playback_finished) {
+		Common::Thread::SleepMicro(1000);
+	}
+
+	if (port->data != nullptr) {
+		delete[] port->data;
+		port->data = nullptr;
+	}
+
+	if (port->data_mutex != nullptr) {
+		delete port->data_mutex;
+		port->data_mutex = nullptr;
+	}
+
+	port->used = false;
+
+	return OK;
+}
+
 int KYTY_SYSV_ABI Audio3dPortSetAttribute(uint32_t port_id, uint32_t attribute_id,
                                           const void* attribute, size_t attribute_size) {
 	PRINT_NAME();

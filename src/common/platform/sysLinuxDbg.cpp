@@ -82,6 +82,9 @@ void SysStackUsage(sys_dbg_stack_info_t& s) {
 
 	auto check_addr = reinterpret_cast<uintptr_t>(&f);
 
+	char format[128];
+	snprintf(format, sizeof(format), "%%" SCNx64 "-%%" SCNx64 " %%7s %%" SCNx64 " %%7s %%" SCNx64 " %%%ds", (int)(MAXPATHLEN - 1));
+
 	while (true) {
 		if (feof(f) != 0) {
 			break;
@@ -99,8 +102,7 @@ void SysStackUsage(sys_dbg_stack_info_t& s) {
 		// printf("%s", str);
 
 		// NOLINTNEXTLINE(cert-err34-c)
-		result = sscanf(str, "%" SCNx64 "-%" SCNx64 " %s %" SCNx64 " %s %" SCNx64 " %s", &addr,
-		                &endaddr, permissions, &offset, device, &inode, filename);
+		result = sscanf(str, format, &addr, &endaddr, permissions, &offset, device, &inode, filename);
 
 		size = endaddr - addr;
 
